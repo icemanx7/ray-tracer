@@ -8,6 +8,7 @@ fn main() {
 
     for j in 0..image_height {
         for i in 0..image_width {
+            eprint!("{} {}" , "\rlines remaining" , j);
             let r: f64 = (i as f64) / ( image_width as f64);
             let g: f64 = (j as f64) / ( image_height  as f64) ;
             let b: f64 = 0.2;
