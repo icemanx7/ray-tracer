@@ -1,3 +1,6 @@
+use vec3::{Vec3};
+mod vec3;
+
 fn main() {
     let image_width: i32 = 200;
     let image_height: i32 = 200;
@@ -19,9 +22,5 @@ fn main() {
             println!("{} {} {}", ir, ig, ib)
             }
     }
-}
-
-
-fn test() {
-    
+    println!("{}", "Done");
 }
