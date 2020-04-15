@@ -1,4 +1,5 @@
-use std::ops::{Add, AddAssign, DivAssign, Mul, MulAssign, Sub};
+use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Sub};
+#[derive(Copy, Clone)]
 pub struct Vec3 {
     pub x: f64,
     pub y: f64,
@@ -42,6 +43,10 @@ impl Vec3 {
         let ib: i64 = (255.999 * self.z) as i64;
         println!("{} {} {}", ir, ig, ib)
     }
+
+    pub fn unit_vector(self) -> Vec3 {
+        self / self.getLength()
+    }
 }
 
 impl Add for Vec3 {
@@ -68,18 +73,29 @@ impl Sub for Vec3 {
     }
 }
 
-impl Mul for Vec3 {
+impl Mul<f64> for Vec3 {
     type Output = Vec3;
 
-    fn mul(self, other: Vec3) -> Vec3 {
+    fn mul(self, other: f64) -> Vec3 {
         Vec3 {
-            x: self.x * other.x,
-            y: self.y * other.y,
-            z: self.z * other.z,
+            x: self.x * other,
+            y: self.y * other,
+            z: self.z * other,
         }
     }
 }
 
+impl Div<f64> for Vec3 {
+    type Output = Vec3;
+
+    fn div(self, other: f64) -> Vec3 {
+        Vec3 {
+            x: self.x / other,
+            y: self.y / other,
+            z: self.z / other,
+        }
+    }
+}
 impl AddAssign<Vec3> for Vec3 {
     fn add_assign(&mut self, rhs: Vec3) {
         self.x += rhs.x;
