@@ -24,7 +24,7 @@ impl Ray {
     }
 
     //Refactor this
-    fn at(self, t: f64) -> Vec3 {
+    pub fn at(self, t: f64) -> Vec3 {
         let pVec = Vec3 {
             x: t * self.dir.x,
             y: t * self.dir.y,

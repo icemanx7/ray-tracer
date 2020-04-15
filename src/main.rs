@@ -61,13 +61,17 @@ fn mult(vect: Vec3, t: f64) -> Vec3 {
     }
 }
 
-fn hit_sphere(center: Vec3, radius: f64, r: ray::Ray) -> bool {
+fn hit_sphere(center: Vec3, radius: f64, r: ray::Ray) -> f64 {
     let oc = r.orig - center;
     let a = vec3::dot(r.dir, r.dir);
     let b = 2.0 * vec3::dot(oc, r.dir);
     let c = vec3::dot(oc, oc) - radius * radius;
     let discriminant = b * b - (4.0 * a * c);
-    return discriminant > 0.0;
+    if discriminant < 0.0 {
+        return -1.0;
+    } else {
+        return (-b - discriminant.sqrt()) / (2.0 * a);
+    }
 }
 
 fn ray_color(r: ray::Ray) -> Vec3 {
@@ -76,12 +80,21 @@ fn ray_color(r: ray::Ray) -> Vec3 {
         y: 0.0,
         z: -1.0,
     };
-    if hit_sphere(sp, 0.5, r) {
-        return Vec3 {
-            x: 1.0,
-            y: 0.0,
-            z: 0.0,
+    let t = hit_sphere(sp, 0.5, r);
+    if t > 0.0 {
+        let temp: Vec3 = r.at(t)
+            - Vec3 {
+                x: 0.0,
+                y: 0.0,
+                z: -1.0,
+            };
+        let N = temp.unit_vector();
+        let fVec = Vec3 {
+            x: N.x + 1.0,
+            y: N.y + 1.0,
+            z: N.z + 1.0,
         };
+        return fVec * 0.5;
     }
     let unit_direction = r.dir.unit_vector();
     let t = 0.5 * (unit_direction.y + 1.0);
