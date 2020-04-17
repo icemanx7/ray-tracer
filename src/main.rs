@@ -63,14 +63,16 @@ fn mult(vect: Vec3, t: f64) -> Vec3 {
 
 fn hit_sphere(center: Vec3, radius: f64, r: ray::Ray) -> f64 {
     let oc = r.orig - center;
-    let a = vec3::dot(r.dir, r.dir);
-    let b = 2.0 * vec3::dot(oc, r.dir);
-    let c = vec3::dot(oc, oc) - radius * radius;
-    let discriminant = b * b - (4.0 * a * c);
+    let a = r.dir.lenthSquared();
+    let half_b = vec3::dot(oc, r.dir);
+    // let b = 2.0 * vec3::dot(oc, r.dir);
+    let c = oc.lenthSquared() - radius * radius;
+    // let discriminant = half_b * half_b - (4.0 * a * c);
+    let discriminant = half_b * half_b - a * c;
     if discriminant < 0.0 {
         return -1.0;
     } else {
-        return (-b - discriminant.sqrt()) / (2.0 * a);
+        return (-half_b - discriminant.sqrt()) / a;
     }
 }
 
