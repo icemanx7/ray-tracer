@@ -1,4 +1,5 @@
 use vec3::Vec3;
+mod hittable;
 mod ray;
 mod vec3;
 
