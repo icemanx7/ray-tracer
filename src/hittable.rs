@@ -6,6 +6,7 @@ pub trait Hittable {
     fn hit(&mut self, r: Ray, t_min: f64, t_max: f64, rec: HitRecord) -> bool;
 }
 
+#[derive(Copy, Clone, Default)]
 pub struct HitRecord {
     pub p: Vec3,
     pub normal: Vec3,

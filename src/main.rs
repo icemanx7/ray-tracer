@@ -1,12 +1,17 @@
 use vec3::Vec3;
+use hittable::{HitRecord, Hittable, Sphere};
+use hittable_list::hittableList;
+use std::sync::{Mutex, Arc};
 mod hittable;
 mod hittable_list;
 mod ray;
 mod vec3;
+mod weekend;
 
 fn main() {
-    let image_width: i32 = 200;
-    let image_height: i32 = 100;
+    let aspect_ratio = 16.0 / 9.0;
+    let image_width: i32 = 384;
+    let image_height: i32 = ((image_width as f64) / aspect_ratio) as i32;
 
     println!("{}", "P3");
     println!("{} {}", image_width, image_height);
@@ -36,18 +41,22 @@ fn main() {
         z: 0.0,
     };
 
+    let mut world: hittableList = hittableList {objects : Vec::new()};
+    world.add(Arc::new(Mutex::new(Sphere {radius: 0.5, center: Vec3{x:0.0,y:0.0,z:-1.0}})));
+    world.add(Arc::new(Mutex::new(Sphere {radius: 100.0, center: Vec3{x:0.0,y:-100.0,z:-1.0}})));
+
     for j in (0..image_height).rev() {
         eprint!("{} {}", "\rlines remaining", j);
         for i in 0..image_width {
-            let u = (i as f64) / (image_width as f64);
-            let v = (j as f64) / (image_height as f64);
+            let u = (i as f64) / (( image_width - 1 ) as f64);
+            let v = (j as f64) / (( image_height -1 ) as f64);
 
             let r: ray::Ray = ray::Ray {
                 orig: origin,
                 dir: lower_left_corner + mult(horizontal, u) + mult(vertical, v),
             };
 
-            let color = ray_color(r);
+            let color = ray_color(r, world.clone());
 
             color.write_color();
         }
@@ -78,38 +87,45 @@ fn hit_sphere(center: Vec3, radius: f64, r: ray::Ray) -> f64 {
     }
 }
 
-fn ray_color(r: ray::Ray) -> Vec3 {
-    let sp = Vec3 {
-        x: 0.0,
-        y: 0.0,
-        z: -1.0,
-    };
-    let t = hit_sphere(sp, 0.5, r);
-    if t > 0.0 {
-        let temp: Vec3 = r.at(t)
-            - Vec3 {
-                x: 0.0,
-                y: 0.0,
-                z: -1.0,
-            };
-        let N = temp.unit_vector();
-        let fVec = Vec3 {
-            x: N.x + 1.0,
-            y: N.y + 1.0,
-            z: N.z + 1.0,
-        };
-        return fVec * 0.5;
+fn ray_color(r: ray::Ray, mut worlds: hittableList) -> Vec3 {
+    let mut rec: HitRecord = HitRecord::default();
+    if worlds.hit(r, 0.0, f64::INFINITY, rec) {
+        return (rec.normal + Vec3 {x: 1.0, y: 1.0,z:1.0}) * 0.5
     }
-    let unit_direction = r.dir.unit_vector();
-    let t = 0.5 * (unit_direction.y + 1.0);
-    return Vec3 {
-        x: 1.0,
-        y: 1.0,
-        z: 1.0,
-    } * (1.0 - t)
-        + Vec3 {
-            x: 0.5,
-            y: 0.7,
-            z: 1.0,
-        } * t;
+    let unit_direction = r.direction().unit_vector();
+    let t = (unit_direction.y + 1.0) * 0.5;
+    return (Vec3 {x: 1.0, y:1.0, z:1.0} * (1.0 - t)) + Vec3 {x: 0.5, y: 0.7 ,z: 1.0} * t
+    // let sp = Vec3 {
+    //     x: 0.0,
+    //     y: 0.0,
+    //     z: -1.0,
+    // };
+    // let t = hit_sphere(sp, 0.5, r);
+    // if t > 0.0 {
+    //     let temp: Vec3 = r.at(t)
+    //         - Vec3 {
+    //             x: 0.0,
+    //             y: 0.0,
+    //             z: -1.0,
+    //         };
+    //     let N = temp.unit_vector();
+    //     let fVec = Vec3 {
+    //         x: N.x + 1.0,
+    //         y: N.y + 1.0,
+    //         z: N.z + 1.0,
+    //     };
+    //     return fVec * 0.5;
+    // }
+    // let unit_direction = r.dir.unit_vector();
+    // let t = 0.5 * (unit_direction.y + 1.0);
+    // return Vec3 {
+    //     x: 1.0,
+    //     y: 1.0,
+    //     z: 1.0,
+    // } * (1.0 - t)
+    //     + Vec3 {
+    //         x: 0.5,
+    //         y: 0.7,
+    //         z: 1.0,
+    //     } * t;
 }
