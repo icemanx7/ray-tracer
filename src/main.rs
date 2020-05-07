@@ -1,5 +1,5 @@
 use crate::weekend::random_double;
-use hittable::{HitRecord, Hittable, Sphere};
+use hittable::{Hittable, Sphere};
 use hittable_list::hittableList;
 use vec3::{random_in_unit_sphere, Vec3};
 mod camera;
@@ -9,7 +9,6 @@ mod ray;
 mod vec3;
 mod weekend;
 use camera::Camera;
-use rand::Rng;
 use ray::Ray;
 
 fn main() {
@@ -63,7 +62,7 @@ fn ray_color(r: &ray::Ray, world: &hittableList, depth: i32) -> Vec3 {
             &Ray::new(res.hitRecord.p, target - res.hitRecord.p),
             world,
             depth - 1,
-        );
+        ) * 0.5;
     }
     let unit_direction = r.direction().unit_vector();
     let t = (unit_direction.y + 1.0) * 0.5;
