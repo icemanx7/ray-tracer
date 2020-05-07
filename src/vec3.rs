@@ -1,3 +1,4 @@
+use crate::weekend::clamp;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub};
 #[derive(Copy, Clone, Default)]
 pub struct Vec3 {
@@ -31,10 +32,17 @@ impl Vec3 {
         self.lenthSquared().sqrt()
     }
 
-    pub fn write_color(self) {
-        let ir: i64 = (255.999 * self.x) as i64;
-        let ig: i64 = (255.999 * self.y) as i64;
-        let ib: i64 = (255.999 * self.z) as i64;
+    pub fn write_color(self, samples_per_pixel: i32) {
+        let scale = 1.0 / samples_per_pixel as f64;
+
+        let r = scale * self.x;
+        let g = scale * self.y;
+        let b = scale * self.z;
+
+        let ir: i64 = (255.999 * clamp(r, 0.0, 0.999)) as i64;
+        let ig: i64 = (255.999 * clamp(g, 0.0, 0.999)) as i64;
+        let ib: i64 = (255.999 * clamp(b, 0.0, 0.999)) as i64;
+
         println!("{} {} {}", ir, ig, ib)
     }
 

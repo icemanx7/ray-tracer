@@ -1,11 +1,15 @@
+use crate::weekend::random_double;
 use hittable::{HitRecord, Hittable, Sphere};
 use hittable_list::hittableList;
 use vec3::Vec3;
+mod camera;
 mod hittable;
 mod hittable_list;
 mod ray;
 mod vec3;
 mod weekend;
+use camera::Camera;
+use rand::Rng;
 
 fn main() {
     let aspect_ratio = 16.0 / 9.0;
@@ -44,21 +48,27 @@ fn main() {
     let hitable2 = Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0);
 
     let world = hittableList::new(vec![Box::new(hitable1), Box::new(hitable2)]);
+    let samples_per_pixel = 100;
+    let camera = Camera::new(
+        Vec3::new(0.0, 0.0, 0.0),
+        Vec3::new(4.0, 0.0, 0.0),
+        Vec3::new(0.0, 2.0, 0.0),
+        Vec3::new(-2.0, -1.0, -1.0),
+    );
 
     for j in (0..image_height).rev() {
         eprint!("{} {}", "\rlines remaining", j);
         for i in 0..image_width {
-            let u = (i as f64) / ((image_width - 1) as f64);
-            let v = (j as f64) / ((image_height - 1) as f64);
+            let mut pixel_color = Vec3::new(0.0, 0.0, 0.0);
 
-            let r: ray::Ray = ray::Ray {
-                orig: origin,
-                dir: lower_left_corner + mult(horizontal, u) + mult(vertical, v),
-            };
+            for s in 0..samples_per_pixel {
+                let u = ((i as f64) + random_double()) / ((image_width - 1) as f64);
+                let v = ((j as f64) + random_double()) / ((image_height - 1) as f64);
+                let r: ray::Ray = camera.get_ray(u, v);
+                pixel_color += ray_color(r, &world)
+            }
 
-            let color = ray_color(r, &world);
-
-            color.write_color();
+            pixel_color.write_color(samples_per_pixel);
         }
     }
     println!("{}", "Done");
