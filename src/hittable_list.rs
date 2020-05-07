@@ -16,7 +16,7 @@ impl hittableList {
 }
 
 impl Hittable for hittableList {
-    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> ReturnHitRecord {
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> ReturnHitRecord {
         let mut hit_anything = false;
         let mut closest_so_far = t_max;
         let mut rec = HitRecord::new(

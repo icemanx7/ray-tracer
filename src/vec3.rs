@@ -1,4 +1,6 @@
-use crate::weekend::clamp;
+use crate::weekend::random_doubleRange;
+use crate::weekend::{clamp, random_double};
+use rand::Rng;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub};
 #[derive(Copy, Clone, Default)]
 pub struct Vec3 {
@@ -49,8 +51,30 @@ impl Vec3 {
     pub fn unit_vector(self) -> Vec3 {
         self / self.getLength()
     }
+
+    pub fn random() -> Vec3 {
+        Vec3::new(random_double(), random_double(), random_double())
+    }
+
+    pub fn randomRange(min: f64, max: f64) -> Vec3 {
+        Vec3::new(
+            random_doubleRange(min, max),
+            random_doubleRange(min, max),
+            random_doubleRange(min, max),
+        )
+    }
 }
 
+pub fn random_in_unit_sphere() -> Vec3 {
+    let mut rng = rand::thread_rng();
+    let mut p = Vec3::randomRange(-1.0, 1.0);
+    while p.lenthSquared() >= 1.0 {
+        p = Vec3::new(rng.gen::<f64>(), rng.gen::<f64>(), rng.gen::<f64>()) * 2.0
+            - Vec3::new(1.0, 1.0, 1.0);
+        continue;
+    }
+    return p;
+}
 impl Add for Vec3 {
     type Output = Vec3;
 

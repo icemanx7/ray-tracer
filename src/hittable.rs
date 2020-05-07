@@ -3,7 +3,7 @@ use crate::{
     vec3::{dot, Vec3},
 };
 pub trait Hittable {
-    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> ReturnHitRecord;
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> ReturnHitRecord;
 }
 
 #[derive(Copy, Clone, Default)]
@@ -53,7 +53,7 @@ impl HitRecord {
 }
 
 impl Hittable for Sphere {
-    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> ReturnHitRecord {
+    fn hit(&self, r: &Ray, t_min: f64, t_max: f64) -> ReturnHitRecord {
         let mut rec = HitRecord::new(t_max, Vec3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.0, 0.0));
         let oc = r.orig - self.center;
         let a = r.dir.lenthSquared();
