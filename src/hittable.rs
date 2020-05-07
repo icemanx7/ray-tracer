@@ -3,7 +3,19 @@ use crate::{
     vec3::{dot, Vec3},
 };
 pub trait Hittable {
-    fn hit(&mut self, r: Ray, t_min: f64, t_max: f64, rec: HitRecord) -> bool;
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> ReturnHitRecord;
+}
+
+#[derive(Copy, Clone, Default)]
+pub struct ReturnHitRecord {
+    pub doesHit: bool,
+    pub hitRecord: HitRecord,
+}
+
+impl ReturnHitRecord {
+    pub fn new(doesHit: bool, hitRecord: HitRecord) -> ReturnHitRecord {
+        ReturnHitRecord { doesHit, hitRecord }
+    }
 }
 
 #[derive(Copy, Clone, Default)]
@@ -11,13 +23,18 @@ pub struct HitRecord {
     pub p: Vec3,
     pub normal: Vec3,
     pub t: f64,
-    pub front_face: bool,
 }
 
 #[derive(Copy, Clone)]
 pub struct Sphere {
     pub center: Vec3,
     pub radius: f64,
+}
+
+impl Sphere {
+    pub fn new(center: Vec3, radius: f64) -> Sphere {
+        Sphere { center, radius }
+    }
 }
 
 impl HitRecord {
@@ -30,19 +47,14 @@ impl HitRecord {
     fn set_t(&mut self, new_t: f64) {
         self.t = new_t;
     }
-
-    fn set_face_normal(&mut self, r: Ray, outward_normal: Vec3) {
-        self.front_face = dot(r.dir, outward_normal) < 0.0;
-        if (self.front_face) {
-            self.normal = outward_normal
-        } else {
-            self.normal = -outward_normal;
-        }
+    pub fn new(t: f64, p: Vec3, normal: Vec3) -> HitRecord {
+        HitRecord { p, normal, t }
     }
 }
 
 impl Hittable for Sphere {
-    fn hit(&mut self, r: Ray, t_min: f64, t_max: f64, mut rec: HitRecord) -> bool {
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> ReturnHitRecord {
+        let mut rec = HitRecord::new(t_max, Vec3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 0.0, 0.0));
         let oc = r.orig - self.center;
         let a = r.dir.lenthSquared();
         let half_b = dot(oc, r.dir);
@@ -55,20 +67,20 @@ impl Hittable for Sphere {
                 rec.set_t(temp);
                 rec.set_p(r.at(rec.t));
                 let outward_normal = (rec.p - self.center) / self.radius;
-                rec.set_face_normal(r, outward_normal);
-                // rec.set_normal((rec.p - self.center) / self.radius);
-                return true;
+                rec.set_normal(outward_normal);
+                // rec.set_face_normal(r, outward_normal);
+                return ReturnHitRecord::new(true, rec);
             }
             let temp = (-half_b + root) / a;
             if (temp < t_max && temp > t_min) {
                 rec.set_t(temp);
                 rec.set_p(r.at(rec.t));
                 let outward_normal = (rec.p - self.center) / self.radius;
-                rec.set_face_normal(r, outward_normal);
-                // rec.set_normal((rec.p - self.center) / self.radius);
-                return true;
+                // rec.set_face_normal(r, outward_normal);
+                rec.set_normal(outward_normal);
+                return ReturnHitRecord::new(true, rec);
             }
         }
-        return false;
+        return ReturnHitRecord::new(false, rec);
     }
 }

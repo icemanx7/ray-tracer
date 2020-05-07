@@ -6,17 +6,11 @@ pub struct Vec3 {
     pub z: f64,
 }
 
-// trait vec3H {
-//     fn x(&self) -> f64;
-//     fn y(&self) -> f64;
-//     fn z(&self) -> f64;
-
-//     fn lenthSquared(self) -> f64;
-//     fn getLength(self) -> f64;
-//     fn write_color(self);
-// }
-
 impl Vec3 {
+    pub fn new(x: f64, y: f64, z: f64) -> Vec3 {
+        Vec3 { x, y, z }
+    }
+
     pub fn x(self) -> f64 {
         self.x
     }

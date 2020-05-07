@@ -32,4 +32,7 @@ impl Ray {
         };
         return self.orig + pVec;
     }
+    pub fn new(orig: Vec3, dir: Vec3) -> Ray {
+        Ray { orig, dir }
+    }
 }

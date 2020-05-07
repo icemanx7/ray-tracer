@@ -1,48 +1,38 @@
-use std::sync::Mutex;
 use crate::{
-    hittable::{HitRecord, Hittable, Sphere},
+    hittable::{HitRecord, Hittable, ReturnHitRecord, Sphere},
     ray::Ray,
     vec3::{dot, Vec3},
 };
-use std::{ops::Deref, sync::Arc};
-
 
 #[derive(Clone, Default)]
 pub struct hittableList {
-    pub objects: Vec<Arc<Mutex<Sphere>>>,
+    pub objects: Vec<Box<Sphere>>,
 }
 
-// impl Deref for hittableList {
-//     type Target = Vec<Arc<Mutex<Sphere>>>;
-
-//     // fn deref(&self) -> &Self::Target {
-//     //     &self.objects
-//     // }
-// }
-
 impl hittableList {
-    fn clear(&mut self) {
-        self.objects.clear();
-    }
-    pub fn add(&mut self, object: Arc<Mutex<Sphere>>) {
-        self.objects.push(object);
+    pub fn new(objects: Vec<Box<Sphere>>) -> hittableList {
+        hittableList { objects }
     }
 }
 
 impl Hittable for hittableList {
-    fn hit(&mut self, r: Ray, t_min: f64, t_max: f64, rec: HitRecord) -> bool {
-        let mut temp_rec: HitRecord = HitRecord::default();
+    fn hit(&self, r: Ray, t_min: f64, t_max: f64) -> ReturnHitRecord {
         let mut hit_anything = false;
         let mut closest_so_far = t_max;
+        let mut rec = HitRecord::new(
+            closest_so_far,
+            Vec3::new(0.0, 0.0, 0.0),
+            Vec3::new(0.0, 0.0, 0.0),
+        );
 
-        for obj in &self.objects {
-            let mut objTemps = obj.lock().unwrap();
-            if objTemps.hit(r, t_min, closest_so_far, temp_rec) {
+        for obj in self.objects.iter() {
+            let objTemps = obj.hit(r, t_min, closest_so_far);
+            if objTemps.doesHit {
                 hit_anything = true;
-                closest_so_far = temp_rec.t;
-                temp_rec = rec;
+                closest_so_far = objTemps.hitRecord.t;
+                rec = objTemps.hitRecord;
             }
         }
-        hit_anything
+        ReturnHitRecord::new(hit_anything, rec)
     }
 }
