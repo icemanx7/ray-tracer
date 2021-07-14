@@ -1,5 +1,5 @@
 use crate::hittable::HitRecord;
-use crate::vec3::{random_unit_vector, reflect};
+use crate::vec3::{random_in_unit_sphere, random_unit_vector, reflect};
 use crate::{
     ray::Ray,
     vec3::{dot, Vec3},
@@ -8,7 +8,7 @@ use crate::{
 #[derive(Copy, Clone)]
 pub enum Material {
     Lambertian { attenuation: Vec3 },
-    Metal { attenuation: Vec3 },
+    Metal { attenuation: Vec3, fuzz: f64 },
 }
 
 impl Material {
@@ -23,10 +23,10 @@ impl Material {
                 let scattered = Ray::new(rec.p, scatter_direction);
                 return MaterialReturn::new(true, *attenuation, scattered);
             }
-            Material::Metal { attenuation } => {
+            Material::Metal { attenuation, fuzz } => {
                 let unit_direction = r_in.direction().unit_vector();
                 let reflected = reflect(unit_direction, rec.normal);
-                let scattered = Ray::new(rec.p, reflected);
+                let scattered = Ray::new(rec.p, reflected + random_in_unit_sphere() * *fuzz);
                 let is_scattered = dot(scattered.direction(), rec.normal) > 0.0;
                 return MaterialReturn::new(is_scattered, *attenuation, scattered);
             }

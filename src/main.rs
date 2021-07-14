@@ -33,10 +33,12 @@ fn main() {
 
     let material_left = Material::Metal {
         attenuation: Vec3::new(0.8, 0.8, 0.8),
+        fuzz: 0.3,
     };
 
     let material_right = Material::Metal {
         attenuation: Vec3::new(0.8, 0.6, 0.2),
+        fuzz: 1.0,
     };
 
     let hitable1 = Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0, Some(material_ground));
