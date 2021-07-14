@@ -1,6 +1,7 @@
 use crate::weekend::random_doubleRange;
 use crate::weekend::{clamp, random_double};
 use rand::Rng;
+use std::f64::consts::PI;
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub};
 #[derive(Copy, Clone, Default)]
 pub struct Vec3 {
@@ -37,9 +38,9 @@ impl Vec3 {
     pub fn write_color(self, samples_per_pixel: i32) {
         let scale = 1.0 / samples_per_pixel as f64;
 
-        let r = scale * self.x;
-        let g = scale * self.y;
-        let b = scale * self.z;
+        let r = (scale * self.x).sqrt();
+        let g = (scale * self.y).sqrt();
+        let b = (scale * self.z).sqrt();
 
         let ir: i64 = (255.999 * clamp(r, 0.0, 0.999)) as i64;
         let ig: i64 = (255.999 * clamp(g, 0.0, 0.999)) as i64;
@@ -63,6 +64,11 @@ impl Vec3 {
             random_doubleRange(min, max),
         )
     }
+
+    pub fn near_zero(self) -> bool {
+        let s: f64 = 1e-8;
+        return (f64::abs(self.x) < s) && (f64::abs(self.y) < s) && (f64::abs(self.z) < s);
+    }
 }
 
 pub fn random_in_unit_sphere() -> Vec3 {
@@ -75,6 +81,14 @@ pub fn random_in_unit_sphere() -> Vec3 {
     }
     return p;
 }
+
+pub fn random_unit_vector() -> Vec3 {
+    let a = random_doubleRange(0.0, PI);
+    let z = random_doubleRange(-1.0, 1.0);
+    let r = (1.0 - z * z).sqrt();
+    return Vec3::new(r * f64::cos(a), r * f64::sin(a), z);
+}
+
 impl Add for Vec3 {
     type Output = Vec3;
 
@@ -122,6 +136,18 @@ impl Mul<f64> for Vec3 {
     }
 }
 
+impl Mul<Vec3> for Vec3 {
+    type Output = Vec3;
+
+    fn mul(self, other: Vec3) -> Vec3 {
+        Vec3 {
+            x: self.x * other.x,
+            y: self.y * other.y,
+            z: self.z * other.z,
+        }
+    }
+}
+
 impl Div<f64> for Vec3 {
     type Output = Vec3;
 
@@ -159,4 +185,8 @@ impl DivAssign<f64> for Vec3 {
 
 pub fn dot(u: Vec3, v: Vec3) -> f64 {
     u.x * v.x + u.y * v.y + u.z * v.z
+}
+
+pub fn reflect(v: Vec3, n: Vec3) -> Vec3 {
+    return v - n * 2.0 * dot(n, v);
 }

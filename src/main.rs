@@ -1,13 +1,16 @@
 use crate::weekend::random_double;
 use hittable::{Hittable, Sphere};
 use hittable_list::hittableList;
-use vec3::{random_in_unit_sphere, Vec3};
+use vec3::{random_in_unit_sphere, random_unit_vector, Vec3};
 mod camera;
 mod hittable;
 mod hittable_list;
+mod material;
 mod ray;
 mod vec3;
 mod weekend;
+
+use crate::material::{Material, MaterialReturn};
 use camera::Camera;
 use ray::Ray;
 
@@ -20,10 +23,33 @@ fn main() {
     println!("{} {}", image_width, image_height);
     println!("{}", "255");
 
-    let hitable1 = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5);
-    let hitable2 = Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0);
+    let material_ground = Material::Lambertian {
+        attenuation: Vec3::new(0.8, 0.8, 0.0),
+    };
 
-    let world = hittableList::new(vec![Box::new(hitable1), Box::new(hitable2)]);
+    let material_center = Material::Lambertian {
+        attenuation: Vec3::new(0.7, 0.3, 0.3),
+    };
+
+    let material_left = Material::Metal {
+        attenuation: Vec3::new(0.8, 0.8, 0.8),
+    };
+
+    let material_right = Material::Metal {
+        attenuation: Vec3::new(0.8, 0.6, 0.2),
+    };
+
+    let hitable1 = Sphere::new(Vec3::new(0.0, -100.5, -1.0), 100.0, Some(material_ground));
+    let hitable2 = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5, Some(material_center));
+    let hitable3 = Sphere::new(Vec3::new(-1.0, 0.0, -1.0), 0.5, Some(material_left));
+    let hitable4 = Sphere::new(Vec3::new(1.0, 0.0, -1.0), 0.5, Some(material_right));
+
+    let world = hittableList::new(vec![
+        Box::new(hitable1),
+        Box::new(hitable2),
+        Box::new(hitable3),
+        Box::new(hitable4),
+    ]);
     let samples_per_pixel = 100;
     let camera = Camera::new(
         Vec3::new(0.0, 0.0, 0.0),
@@ -55,14 +81,26 @@ fn ray_color(r: &ray::Ray, world: &hittableList, depth: i32) -> Vec3 {
     if depth <= 0 {
         return Vec3::new(0.0, 0.0, 0.0);
     }
-    let res = world.hit(r, 0.0, std::f64::INFINITY);
+    let res = world.hit(r, 0.001, std::f64::INFINITY);
     if res.doesHit {
-        let target = res.hitRecord.p + res.hitRecord.normal + random_in_unit_sphere();
-        return ray_color(
-            &Ray::new(res.hitRecord.p, target - res.hitRecord.p),
-            world,
-            depth - 1,
-        ) * 0.5;
+        match res.hitRecord.mat_ptr {
+            Some(material) => {
+                let target = res.hitRecord.p + res.hitRecord.normal + random_unit_vector();
+                let scat_res: MaterialReturn = material.scatter(r, res.hitRecord);
+                if (scat_res.is_scatter) {
+                    return scat_res.color * ray_color(&scat_res.scat_ray, world, depth - 1);
+                }
+                return Vec3::new(0.0, 0.0, 0.0);
+            }
+            None => {
+                return Vec3::new(0.0, 0.0, 0.0);
+            }
+        }
+        // return ray_color(
+        //     &Ray::new(res.hitRecord.p, target - res.hitRecord.p),
+        //     world,
+        //     depth - 1,
+        // ) * 0.5;
     }
     let unit_direction = r.direction().unit_vector();
     let t = (unit_direction.y + 1.0) * 0.5;

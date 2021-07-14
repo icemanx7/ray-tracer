@@ -23,6 +23,7 @@ impl Hittable for hittableList {
             closest_so_far,
             Vec3::new(0.0, 0.0, 0.0),
             Vec3::new(0.0, 0.0, 0.0),
+            None,
         );
 
         for obj in self.objects.iter() {

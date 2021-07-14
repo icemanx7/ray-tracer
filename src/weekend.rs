@@ -1,14 +1,5 @@
-use crate::{
-    hittable::{HitRecord, Hittable, Sphere},
-    ray::Ray,
-    vec3::{dot, Vec3},
-};
 use rand::Rng;
-use std::sync::Mutex;
-use std::{f64::consts::PI, ops::Deref, sync::Arc};
-// inline double degrees_to_radians(double degrees) {
-//     return degrees * pi / 180;
-// }
+use std::f64::consts::PI;
 
 fn degrees_to_radians(degrees: f64) -> f64 {
     return degrees * PI / 180.0;
